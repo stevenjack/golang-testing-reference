@@ -46,6 +46,16 @@ func TestBookFetchByIDWithMock(t *testing.T) {
 			errAssertion: IsSentinelError(errStorage),
 			id:           "1",
 		},
+		"When storage returns not found error, return specific book not found error": {
+			configureStorageMock: func(m *storagetest.MockFetcher) {
+				m.EXPECT().
+					Fetch("1").
+					Return(nil, storage.ErrNotFound)
+			},
+			errAssertion: IsSentinelError(repository.ErrBookNotFound),
+			id:           "1",
+		},
+
 		"When unmarshaling response from storage fails, return error": {
 			configureStorageMock: func(m *storagetest.MockFetcher) {
 				m.EXPECT().
@@ -123,7 +133,16 @@ func TestBookFetchByIDWithoutMock(t *testing.T) {
 					return nil, errStorage
 				}
 			},
-			errAssertion: assert.Error,
+			errAssertion: IsSentinelError(errStorage),
+			id:           "1",
+		},
+		"When storage returns not found error, return specific book not found error": {
+			configureStorageStub: func(m *storageStub) {
+				m.FetchFunc = func(id string) ([]byte, error) {
+					return nil, storage.ErrNotFound
+				}
+			},
+			errAssertion: IsSentinelError(repository.ErrBookNotFound),
 			id:           "1",
 		},
 		"When unmarshaling response from storage fails, return error": {
